@@ -1,8 +1,45 @@
-venv/
+# Local environments and credentials
+/venv/
+/.venv/
+/env/
+.env
+.env.*
+!.env.example
 
-*.csv
-*.zip
-
-.ipynb_checkpoints/
-
+# Python and notebook caches
 __pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+/notebooks/cache/**
+!/notebooks/cache/**/
+!/notebooks/cache/**/.gitkeep
+
+# Downloaded source data and generated processed data stay local.
+# Keep only explicit folder markers and the OSM acquisition/provenance note.
+/data/raw/**
+!/data/raw/**/
+!/data/raw/**/.gitkeep
+!/data/raw/osm/README.md
+/data/processed/**
+!/data/processed/**/
+!/data/processed/**/.gitkeep
+
+# Generated reports, figures, and other run outputs
+/outputs/**
+!/outputs/**/
+!/outputs/**/.gitkeep
+
+# Satellite and other large raster imagery (even if stored outside data/).
+*.tif
+*.tiff
+*.jp2
+*.vrt
+
+# Common local/editor files
+.DS_Store
+Thumbs.db

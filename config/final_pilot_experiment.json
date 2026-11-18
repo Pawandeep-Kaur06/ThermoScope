@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "experiment_id": "thermoscope_dhanbad_final_pilot_v1",
+  "status": "configured_preflight_only_full_run_waits_for_plan_review",
+  "research_scope": {
+    "study_area": "Dhanbad-Jharia-Bokaro, Jharkhand, India",
+    "objective": "Evidence-based analysis and prioritization of satellite thermal observations near mapped industrial contexts using NASA FIRMS, OpenStreetMap, temporal recurrence, and Sentinel-2 imagery.",
+    "claim_boundary": "Explainable candidate-prioritization framework; not a validated supervised industrial-fire classifier.",
+    "supplementary_data": "GEM coal mine/plant records are context only, not labels or a restriction of industrial scope."
+  },
+  "region": {
+    "region_id": "dhanbad_jharia_bokaro",
+    "configuration": "config/regions.json",
+    "configuration_sha256": "cc08e86c1fff27e81ef02d5e22acb6de9b9ab53f875881d9e43be85c21797f52",
+    "boundary_type": "inclusive WGS84 bounding box",
+    "bbox_wgs84": {
+      "west": 85.75,
+      "south": 23.25,
+      "east": 86.75,
+      "north": 24.0
+    },
+    "distance_crs": "EPSG:32645",
+    "recurrence_grid_crs": "EPSG:32645",
+    "country_polygon_used": false
+  },
+  "firms": {
+    "inputs": [
+      {
+        "role": "archive",
+        "path": "data/raw/archive.csv",
+        "size_bytes": 327304467,
+        "sha256": "bec91015e4deccd388af92558368bee673235376adc6493dc9ee53f6920ca043",
+        "input_rows": 4073699,
+        "pilot_rows_before_deduplication": 6498,
+        "date_range": "2026-01-20/2026-04-27"
+      },
+      {
+        "role": "nrt",
+        "path": "data/raw/nrt.csv",
+        "size_bytes": 608946569,
+        "sha256": "b2d06fe4fadd2a0d2e2d620a67750c3e84cc5e5b1b09e2eb1059ca4aef4be4fa",
+        "input_rows": 7247714,
+        "pilot_rows_before_deduplication": 2722,
+        "date_range": "2026-04-30/2026-09-05"
+      }
+    ],
+    "deduplication": {
+      "keys": [
+        "latitude",
+        "longitude",
+        "acq_date",
+        "acq_time",
+        "satellite",
+        "instrument",
+        "scan when present",
+        "track when present"
+      ],
+      "canonical_source": "archive wins on overlap",
+      "provenance_fields": [
+        "firms_sources",
+        "duplicate_record_count",
+        "firms_observation_id"
+      ],
+      "observed_overlaps": 0,
+      "observed_duplicate_input_rows_removed": 0
+    },
+    "prepared_reference": {
+      "path": "data/processed/firms_pilot.csv",
+      "size_bytes": 841401,
+      "sha256": "c4588f65185e459cfeeb1066e4d1d8d0247654a4702aa12f8471f03e763b03f9",
+      "rows": 9220,
+      "acquisition_date_range": "2026-01-20/2026-09-05",
+      "distinct_dates": 184,
+      "missing_output_values": {
+        "type": 2722
+      }
+    }
+  },
+  "osm": {
+    "path": "data/processed/osm/dhanbad_jharia_bokaro_osm.gpkg",
+    "size_bytes": 2191360,
+    "sha256": "97b5a1906bacd0a9964529c1cbf385ebb573b05ab34412dfdb2811e453cecbe9",
+    "manifest": "data/processed/osm/manifest.json",
+    "manifest_sha256": "44c1e418af26e9aeb9032e9059a5e8cbd1c9d9bf14abfc07aa6e62214e5e5c80",
+    "source_snapshot": "Geofabrik Eastern Zone, OSM data through 2026-10-16",
+    "source_sha256": "6e187ecfc152ba8803badf48bbdbf427cbcb231eb3aa5fff20a851e478017602",
+    "license": "ODbL 1.0; attribute OpenStreetMap contributors",
+    "features": 8333,
+    "layers": {
+      "points": 7574,
+      "lines": 225,
+      "multipolygons": 534
+    },
+    "limitations": [
+      "Pilot-extent only; incomplete outside the pilot bbox.",
+      "Static snapshot is not historical at each FIRMS date.",
+      "GDAL reported malformed/unclosed source polygon rings; no custom repair was applied."
+    ]
+  },
+  "gem": {
+    "role": "supplementary coal-facility context only",
+    "raw_manifest": {
+      "path": "data/raw/gem/manifest.json",
+      "sha256": "c6a66c9ba6a28643b8156112166cdfde4f9def342c0512e1f0a0a3320857b900"
+    },
+    "filtered_inputs": [
+      {
+        "path": "data/processed/gem/coal_mines_dhanbad_jharia_bbox.json",
+        "size_bytes": 58892,
+        "sha256": "7d952d701419ff770fe03ebff67dc77ee711f1e68c2e1c02ccd60376179ed07b"
+      },
+      {
+        "path": "data/processed/gem/coal_plants_dhanbad_jharia_bbox.json",
+        "size_bytes": 24227,
+        "sha256": "9dbe2c088108baff8d8e7bcfb2c3197a054944745bd419421b906e84763e6fa2"
+      }
+    ],
+    "records_used_in_existing_match": "96 combined mine/plant records; count is not an event or detection label"
+  },
+  "spatial_matching": {
+    "max_search_distance_m": 1000,
+    "reported_thresholds_m": [
+      100,
+      250,
+      500,
+      1000
+    ],
+    "ambiguity_tolerance_m": 100,
+    "distance_geometry": "minimum Euclidean distance in EPSG:32645; points, lines, and polygons retained and measured by geometry distance",
+    "candidate_evidence_roles": [
+      "industrial_landuse",
+      "industrial_facility",
+      "mining_extraction_area",
+      "mine_working_feature",
+      "waste_facility",
+      "industrial_rail",
+      "power_generation",
+      "power_site"
+    ],
+    "general_power_infrastructure": "Retain transmission/distribution lines, towers, and related tags as separate context; do not treat them as industrial-source evidence by themselves.",
+    "interpretation": "All proximity outputs are evidence indicators only; no causal attribution."
+  },
+  "recurrence": {
+    "cell_size_m": 250,
+    "grid_crs": "EPSG:32645",
+    "key": "hotspot_cell_id",
+    "history_rule": "For a detection on date d, count only distinct acquisition dates strictly earlier than d in the same fixed grid cell; exclude same-day rows.",
+    "source_window": "2026-01-20/2026-09-05; history is left-truncated to the available source window.",
+    "interpretation": "A cell is a spatial analysis unit, not a unique physical source."
+  },
+  "sentinel2": {
+    "catalog": "https://earth-search.aws.element84.com/v1/search",
+    "collection": "sentinel-2-l2a",
+    "credentials": "none; public STAC and COG access",
+    "selection": "Eight fixed hotspot_cell_id values in config; one representative scene per cell, searched within 30 days before that cell's latest FIRMS date; choose closest acquisition timestamp, then lower scene cloud cover; retrieve only when required assets include B04/B03/B02/B11/SCL.",
+    "fixed_cell_ids": [
+      "utm45n_1769_10501",
+      "utm45n_1678_10520",
+      "utm45n_1627_10475",
+      "utm45n_1653_10520",
+      "utm45n_1757_10512",
+      "utm45n_1751_10519",
+      "utm45n_1769_10500",
+      "utm45n_1678_10519"
+    ],
+    "chip": {
+      "size_pixels": "64x64",
+      "extent_m": "640x640",
+      "grid_resolution_m": 10,
+      "bands": {
+        "B04": "red, 10 m",
+        "B03": "green, 10 m",
+        "B02": "blue, 10 m",
+        "B11": "SWIR, native 20 m resampled to 10 m grid"
+      },
+      "scl": "nearest-resampled to chip grid"
+    },
+    "historical_eligibility": "Feature values are usable only when scene timestamp <= the exact FIRMS acquisition timestamp. Search currently allows a scene through 23:59:59 UTC on the cell's latest acquisition date; later-per-row scenes are withheld.",
+    "cloud_screen": "Use SCL classes 4, 5, 6 only; exclude cloud, shadow, cirrus, snow, defective, unclassified, and nodata. Legacy chips without SCL are allowed only for exactly zero recorded chip-wide cloud/shadow fraction.",
+    "missing_policy": "Cloudy, absent, temporally future, or unverifiable pixels are missing/withheld, never evidence of no fire.",
+    "existing_coverage": "8 chips; historical feature validation found 11 detections with eligible scenes and 2 with valid pre-detection clear spectral samples.",
+    "retrieval_mode": "Reuse the existing locally downloaded chip run as a fixed, checksum-pinned reference; do not query STAC during the final run.",
+    "existing_reference_run": {
+      "path": "data/processed/satellite_investigation/run_20261018T212303Z",
+      "scene_metadata_sha256": "f2235cf0980785352bc15019d322edb6be8e499e41dd591d1a4dc9182b885097",
+      "chips": [
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1627_10475_S2B_45QUG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 29707,
+          "sha256": "4c56d67dc9b74a1a16549065f49d0c530670aef9ae4ac13eef2448315759df52"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1627_10475_S2B_45QUG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1086,
+          "sha256": "29c79f3122f374d5306ead7bfe0724f340396835ce25ca3098799726eb70352e"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1653_10520_S2B_45QVG_20260625_0_L2A_4band_10m.tif",
+          "size_bytes": 25791,
+          "sha256": "66c6edc5ecbc997a62fb51f51cdbd1ab2962b36deb97c146d4e4df99f530eccb"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1653_10520_S2B_45QVG_20260625_0_L2A_scl_10m.tif",
+          "size_bytes": 1184,
+          "sha256": "b59fe48973e79b61092ed69618256f46832a5440ff7d215f469f66b5d66e9109"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1678_10519_S2B_45QVG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 28999,
+          "sha256": "87837ccbc1378de6679368ee9a862f83e4ffbea5ca529c96346fba696ccbb883"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1678_10519_S2B_45QVG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1086,
+          "sha256": "bbb79c55d9d940a58ad0fff1c5bbe775fec366acfd1488ca3d0603fc8f5c1515"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1678_10520_S2A_45QVG_20260811_1_L2A_4band_10m.tif",
+          "size_bytes": 26085,
+          "sha256": "d7b9b38f02c28823c687dcbdf7d4d0780afadfccf263ea91c3e180019ff874c0"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1678_10520_S2A_45QVG_20260811_1_L2A_scl_10m.tif",
+          "size_bytes": 1150,
+          "sha256": "8f83eb7893a167b084ae557af59bc30572cd2749ae7b8f6db10caded7fe57ea4"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1751_10519_S2B_45QVG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 27519,
+          "sha256": "92640527ba902ced1048e3abbe14240049e4bb0f1e36409d3cd1d01a24946e82"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1751_10519_S2B_45QVG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1304,
+          "sha256": "380d29baff26db65239c062396076d444e12236eef4deaebab44eec35765bc28"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1757_10512_S2B_45QVG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 27117,
+          "sha256": "f718c35caf932a7b9c48f1810c63c18eeb191f184a4629f41b68af8fb303267f"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1757_10512_S2B_45QVG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1252,
+          "sha256": "69bbc279a96f01e59c2b135ac04830b44969b3eb54bf142b416c5b5c5de80517"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1769_10500_S2B_45QVG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 28531,
+          "sha256": "fdb3ad3a7750a9e5c1039ccfd43706bb7c0388aefcae79947d0bbcd3945875c4"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1769_10500_S2B_45QVG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1216,
+          "sha256": "865dec8cb98a409bebdbc70a8eb3c9e6b64a69ee41225ed88363150e0d6ebedc"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1769_10501_S2B_45QVG_20260903_0_L2A_4band_10m.tif",
+          "size_bytes": 28527,
+          "sha256": "74276245e1696c1488d7cddeb78e2297ef52166c2057e2f49265df4f2217969c"
+        },
+        {
+          "path": "data/processed/satellite_investigation/run_20261018T212303Z/utm45n_1769_10501_S2B_45QVG_20260903_0_L2A_scl_10m.tif",
+          "size_bytes": 1196,
+          "sha256": "e37e67b355ee7f56bd7521ccb4fdaf6a9b1712431d620f34f74fc37201bf6aa8"
+        }
+      ]
+    }
+  },
+  "candidate_ranking": {
+    "frp_review_flag_mw": 5,
+    "strictly_prior_dates_for_persistent_flag": 3,
+    "near_relevant_osm_m": 250,
+    "context_distance_cap_m": 1000,
+    "score_weights": {
+      "thermal": 0.5,
+      "past_recurrence": 0.3,
+      "mapped_relevant_context": 0.2
+    },
+    "confidence_components": {
+      "H": 1.0,
+      "N": 0.65,
+      "L": 0.3,
+      "unknown": 0.0
+    },
+    "ambiguous_osm_context_multiplier": 0.5,
+    "satellite_policy": "Valid spectra are audit evidence only and do not change the score/category because coverage is sparse and no class signature is validated.",
+    "label_policy": "Every row remains unknown_unlinked unless separately adjudicated with adequate time/location evidence; no negatives or performance metrics inferred."
+  },
+  "software": {
+    "python": "3.12.4",
+    "requirements_file": "requirements-satellite.txt",
+    "requirements_sha256": "cc7b988cb9a64c813a3a18883cf0b1af0b40202cf489b91827dae7fc4e762701",
+    "packages": {
+      "pandas": "3.0.6",
+      "geopandas": "1.1.4",
+      "shapely": "2.1.2",
+      "pyproj": "3.8.0",
+      "pyogrio": "0.13.0",
+      "GDAL_runtime": "3.12.4",
+      "rasterio": "1.5.2",
+      "numpy": "2.5.3",
+      "matplotlib": "3.11.2",
+      "requests": "2.34.2"
+    },
+    "system_requirement": "Pyogrio/GDAL build must expose read-only OSM driver; verified in current environment."
+  },
+  "outputs": {
+    "root": "data/processed/final_pilot_experiment/run_001",
+    "structure": {
+      "input": "firms_pilot.csv and preparation quality/cache manifests",
+      "spatial_matching": "CSV, GeoPackage, summaries, tables, figures, run metadata",
+      "satellite_evidence": "scene metadata, 4-band/SCL chips, overlays and source notes",
+      "features": "feature_table.csv.gz, schema/definitions, missingness, quality checks, plots",
+      "candidate_ranking": "ranked table, category/evidence tables, validation, plots",
+      "evidence_review": "source inventory, event register, unresolved human-review queue, validation",
+      "validation": "input_manifest.json and reproducibility_report.json",
+      "satellite_reference": "validation/satellite_evidence_reference.json (points to existing pinned local run; source chips are not duplicated)"
+    }
+  },
+  "reproducibility": {
+    "processing_date_utc": null,
+    "status": "Preflight only; full experiment intentionally not run pending review.",
+    "validate_inputs_by_sha256": true,
+    "use_new_run_root_if_target_exists": true,
+    "network": "No network access is required for the configured final run. Optional future imagery refresh would use the bounded public STAC/COG workflow and must create a separate run."
+  }
+}

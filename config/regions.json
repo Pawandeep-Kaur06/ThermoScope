@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "coordinate_system": "EPSG:4326",
+  "boundary_convention": "minima inclusive; maxima follow each region's max_inclusive setting",
+  "regions": {
+    "india": {
+      "name": "India (Natural Earth country boundary)",
+      "boundary_type": "bbox_with_country_polygon",
+      "bbox_wgs84": {"west": 68.1, "south": 6.5, "east": 97.4, "north": 37.1},
+      "max_inclusive": true,
+      "country_boundary": {
+        "geometry_path": "data/processed/boundaries/india_naturalearth_10m_india_pov.geojson",
+        "source": "Natural Earth Admin-0 Countries, India POV",
+        "source_version": "5.1.1",
+        "source_scale": "1:10m",
+        "source_url": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries_ind.zip",
+        "source_license": "Public domain",
+        "source_sha256": "36a54ee97a509325e98eb44fd91bc7e53b0c5139cf10039918042bbd64102192",
+        "prepared_sha256": "63cf5863fb8f2aa92d1c974215844740bfc3fdb4df9ffdfaa1a48d30a8710796",
+        "crs": "OGC:CRS84"
+      },
+      "projected_crs_strategy": "utm_per_tile",
+      "recurrence_grid_crs": "EPSG:6933",
+      "tiling": {
+        "scheme": "regular_latlon",
+        "tile_width_degrees": 3.0,
+        "tile_height_degrees": 3.0,
+        "origin": "region_southwest",
+        "id_template": "india_r{row:02d}_c{column:02d}",
+        "edge_rule": "west/south inclusive; east/north exclusive except the outermost region edge, which is inclusive"
+      },
+      "administrative_level": "country",
+      "notes": "The rectangular bbox is only the fixed tile-grid extent; FIRMS membership is additionally constrained by the Natural Earth 10m India POV polygon. Nationwide distances remain partitioned into local tiles."
+    },
+    "jharkhand": {
+      "name": "Jharkhand state (OSM administrative boundary)",
+      "boundary_type": "bbox_with_country_polygon",
+      "bbox_wgs84": {"west": 83.3281137, "south": 21.9700317, "east": 87.9628253, "north": 25.3489225},
+      "max_inclusive": true,
+      "country_boundary": {
+        "geometry_path": "data/processed/boundaries/jharkhand_osm_admin4.geojson",
+        "source": "OpenStreetMap administrative relation 1960191, Jharkhand, admin_level=4",
+        "source_version": "Geofabrik Eastern Zone extract 261016; OSM data through 2026-10-16",
+        "source_url": "https://download.geofabrik.de/asia/india/eastern-zone-261016.osm.pbf",
+        "source_license": "Open Database License (ODbL) 1.0; attribute OpenStreetMap contributors",
+        "prepared_sha256": "48b610248936171abac42aaf84119da58ce444a25d35dceda8e156067e8df25a",
+        "crs": "EPSG:4326"
+      },
+      "projected_crs_strategy": "utm_per_tile",
+      "recurrence_grid_crs": "EPSG:6933",
+      "tiling": {
+        "scheme": "regular_latlon",
+        "tile_width_degrees": 1.0,
+        "tile_height_degrees": 1.0,
+        "origin": "region_southwest",
+        "id_template": "jharkhand_r{row:02d}_c{column:02d}",
+        "edge_rule": "west/south inclusive; east/north exclusive except the outermost region edge, which is inclusive"
+      },
+      "administrative_level": "state",
+      "state": "Jharkhand",
+      "boundary_limitations": [
+        "OSM administrative boundary from the pinned 2026-10-16 extract; not a legal survey boundary.",
+        "Administrative geometry may differ from authoritative government demarcations."
+      ],
+      "notes": "The OSM state polygon constrains the bounding-box tile grid. FIRMS rows outside the state polygon are excluded; matching uses one local UTM CRS per tile and recurrence uses a tile-independent equal-area grid."
+    },
+    "dhanbad_jharia_bokaro": {
+      "name": "Dhanbad-Jharia-Bokaro pilot",
+      "boundary_type": "bbox",
+      "bbox_wgs84": {"west": 85.75, "south": 23.25, "east": 86.75, "north": 24.0},
+      "max_inclusive": true,
+      "projected_crs": "EPSG:32645",
+      "recurrence_grid_crs": "EPSG:32645",
+      "administrative_level": "pilot",
+      "state": "Jharkhand",
+      "notes": "Existing pilot bounds. Bounds are inclusive for compatibility with prior pilot runs."
+    }
+  }
+}

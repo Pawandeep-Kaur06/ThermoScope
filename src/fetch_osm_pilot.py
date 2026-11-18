@@ -1,4 +1,4 @@
-"""Acquire and locally filter the Dhanbad–Jharia–Bokaro OSM pilot extract.
+"""Acquire and locally filter OSM features for a configured ThermoScope region.
 
 No Overpass requests are made. A pinned Geofabrik Eastern Zone PBF is fetched
 only when --download is supplied, then GDAL's OSM driver reads the PBF locally.
@@ -16,6 +16,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+try:
+    from src.regions import DEFAULT_REGION_CONFIG, bounds_tuple, get_region, load_country_boundary
+except ImportError:  # pragma: no cover - direct script invocation
+    from regions import DEFAULT_REGION_CONFIG, bounds_tuple, get_region, load_country_boundary
 
 PBF_URL = "https://download.geofabrik.de/asia/india/eastern-zone-261016.osm.pbf"
 MD5_URL = PBF_URL + ".md5"
@@ -195,7 +200,14 @@ def feature_groups(tags: dict[str, object]) -> list[str]:
     return sorted(groups)
 
 
-def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, overwrite: bool, md5: str | None) -> None:
+def intersect_region(frame, region_geometry):
+    """Select full OSM geometries intersecting the study polygon, without clipping."""
+    return frame.loc[frame.geometry.notna() & frame.geometry.intersects(region_geometry)].copy()
+
+
+def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, overwrite: bool,
+                    md5: str | None, region_id: str = "dhanbad_jharia_bokaro",
+                    region_config: Path | str = DEFAULT_REGION_CONFIG) -> None:
     try:
         import geopandas as gpd
         import pyogrio
@@ -215,7 +227,14 @@ def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, over
             if path.exists():
                 path.unlink()
 
-    bounds_geom = box(*BOUNDS)
+    region = get_region(region_id, region_config)
+    bounds = bounds_tuple(region)
+    bounds_geom = box(*bounds)
+    if region.get("boundary_type") == "bbox_with_country_polygon":
+        state_geometry = load_country_boundary(region)
+        region_geometry = state_geometry.intersection(bounds_geom)
+    else:
+        region_geometry = bounds_geom
     layer_counts: dict[str, dict[str, int]] = {}
     total_features = 0
     temp_dir_path = Path(tempfile.mkdtemp(prefix="thermoscope_gdal_", dir=pbf_path.parent))
@@ -232,14 +251,16 @@ def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, over
             frame = pyogrio.read_dataframe(
                 pbf_path,
                 layer=source_layer,
-                bbox=BOUNDS,
+                bbox=bounds,
                 use_arrow=False,
                 INTERLEAVED_READING="YES",
             )
             if frame.empty or "all_tags" not in frame.columns:
                 layer_counts[source_layer] = {"bbox_candidates": len(frame), "kept": 0}
                 continue
-            frame = frame.loc[frame.geometry.notna() & frame.geometry.intersects(bounds_geom)].copy()
+            # Select features intersecting the exact region polygon. Preserve the
+            # original, full geometries for distance matching; never clip them.
+            frame = intersect_region(frame, region_geometry)
             parsed = frame["all_tags"].map(tag_dict)
             groups = parsed.map(feature_groups)
             keep = groups.map(bool)
@@ -258,7 +279,9 @@ def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, over
                 driver="GPKG",
                 geometry_type="Unknown",
                 append=output_path.exists(),
-                layer_metadata={"source": "OpenStreetMap via Geofabrik", "selection_bbox_wgs84": json.dumps(BOUNDS)},
+                layer_metadata={"source": "OpenStreetMap via Geofabrik", "region_id": region_id,
+                                "selection_bbox_wgs84": json.dumps(bounds),
+                                "selection_boundary": region.get("country_boundary", {}).get("source", "region bbox")},
             )
             layer_counts[source_layer] = {"bbox_candidates": int(len(parsed)), "kept": int(len(frame))}
             total_features += len(frame)
@@ -285,9 +308,12 @@ def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, over
         "raw_size_bytes": source_bytes,
         "raw_md5": md5,
         "raw_sha256": sha256.hexdigest(),
-        "pilot_bbox_wgs84": {"west": BOUNDS[0], "south": BOUNDS[1], "east": BOUNDS[2], "north": BOUNDS[3]},
-        "filter_method": "GDAL OSM/PBF reader bbox selection followed by exact geometry intersection and local tag-category filtering; Overpass was not used.",
-        "retained_geometry": "Original full feature geometries are retained; features crossing the pilot bbox are not clipped.",
+        "region_id": region_id,
+        "region_name": region.get("name"),
+        "region_bbox_wgs84": {"west": bounds[0], "south": bounds[1], "east": bounds[2], "north": bounds[3]},
+        "region_boundary_source": region.get("country_boundary", {}).get("source", "configured region bbox"),
+        "filter_method": "GDAL OSM/PBF reader bbox selection followed by exact region geometry intersection and local tag-category filtering; Overpass was not used.",
+        "retained_geometry": "Original full feature geometries are retained; features intersecting the region are not clipped.",
         "tag_preservation": "GDAL all_tags JSON field retains source OSM tags on selected features; osm_id and source geometry layer are retained.",
         "retained_feature_groups": ["industrial_landuse", "industrial_facility", "power_infrastructure", "mining_extraction", "industrial_structure", "industrial_rail", "waste_facility", "vegetation_context"],
         "output_file": str(output_path.relative_to(output_path.parents[3])).replace("\\", "/"),
@@ -303,20 +329,34 @@ def process_extract(pbf_path: Path, output_path: Path, manifest_path: Path, over
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     action = parser.add_mutually_exclusive_group(required=True)
-    action.add_argument("--download", action="store_true", help="download the pinned 235.8 MiB extract, then process it")
-    action.add_argument("--process-only", action="store_true", help="process the already-downloaded pinned PBF")
-    parser.add_argument("--overwrite", action="store_true", help="replace only the generated PBF/GPKG/manifest targets")
+    action.add_argument("--download", action="store_true", help="download the pinned 235.8 MiB Eastern Zone extract, then process it")
+    action.add_argument("--process-only", action="store_true", help="process an already-downloaded regional PBF")
+    parser.add_argument("--region", default="dhanbad_jharia_bokaro", help="shared region ID (pilot remains the default)")
+    parser.add_argument("--region-config", type=Path, default=DEFAULT_REGION_CONFIG, help="shared region JSON")
+    parser.add_argument("--pbf", type=Path, help="local OSM PBF (default: pinned Eastern Zone extract)")
+    parser.add_argument("--output", type=Path, help="new GeoPackage path (default: existing pilot path)")
+    parser.add_argument("--manifest", type=Path, help="new provenance manifest path (default: existing pilot path)")
+    parser.add_argument("--overwrite", action="store_true", help="replace only the explicitly selected generated GPKG/manifest targets")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     raw_dir, processed_dir = repo / "data" / "raw" / "osm", repo / "data" / "processed" / "osm"
-    pbf_path, md5_path = raw_dir / RAW_PBF_NAME, raw_dir / RAW_MD5_NAME
-    output_path, manifest_path = processed_dir / OUTPUT_NAME, processed_dir / MANIFEST_NAME
+    pbf_path = args.pbf if args.pbf else raw_dir / RAW_PBF_NAME
+    if not pbf_path.is_absolute():
+        pbf_path = (repo / pbf_path).resolve()
+    md5_path = pbf_path.with_suffix(pbf_path.suffix + ".md5")
+    output_path = args.output if args.output else processed_dir / OUTPUT_NAME
+    manifest_path = args.manifest if args.manifest else processed_dir / MANIFEST_NAME
+    if not output_path.is_absolute():
+        output_path = (repo / output_path).resolve()
+    if not manifest_path.is_absolute():
+        manifest_path = (repo / manifest_path).resolve()
     raw_dir.mkdir(parents=True, exist_ok=True)
-    processed_dir.mkdir(parents=True, exist_ok=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     md5 = None
     if args.download:
         md5 = download_extract(pbf_path, md5_path, args.overwrite)
-    process_extract(pbf_path, output_path, manifest_path, args.overwrite, md5)
+    process_extract(pbf_path, output_path, manifest_path, args.overwrite, md5,
+                    args.region, args.region_config)
     return 0
 
 

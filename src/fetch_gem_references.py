@@ -15,6 +15,10 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+try:
+    from src.pipeline_cache import artifact_record, atomic_json, file_fingerprint
+except ImportError:  # pragma: no cover
+    from pipeline_cache import artifact_record, atomic_json, file_fingerprint
 
 API_BASE = "https://api.globalenergymonitor.org"
 API_DOCS = f"{API_BASE}/openapi.json"
@@ -105,12 +109,63 @@ def write_json(path: Path, value: Any, overwrite: bool) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def existing_gem_cache_is_valid(raw_dir: Path, processed_dir: Path) -> bool:
+    """Validate local GEM snapshots before making any API request."""
+    manifest_path = raw_dir / "manifest.json"
+    if not manifest_path.is_file():
+        return False
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("source") != "Global Energy Monitor (GEM) Assets API":
+            return False
+        for config in DATASETS.values():
+            raw_path = raw_dir / config["raw_file"]
+            filtered_path = processed_dir / config["filtered_file"]
+            if not raw_path.is_file() or not filtered_path.is_file():
+                return False
+            raw = json.loads(raw_path.read_text(encoding="utf-8"))
+            pages = raw.get("pages", [raw]) if isinstance(raw, dict) else []
+            records = [row for page in pages for row in page.get("results", [])]
+            filtered = json.loads(filtered_path.read_text(encoding="utf-8"))
+            stats = manifest.get("datasets", {}).get(config["name"], {})
+            if (len(records) != stats.get("state_record_count")
+                    or len(filtered.get("records", [])) != stats.get("filtered_record_count")
+                    or filtered.get("record_count") != stats.get("filtered_record_count")):
+                return False
+            expected_ids = {str(r.get("asset_id")) for r in records if in_bounds(r)}
+            filtered_ids = {str(r.get("asset_id")) for r in filtered.get("records", [])}
+            if expected_ids != filtered_ids:
+                return False
+            # Establish checksum metadata for older valid local snapshots without
+            # changing the data or triggering a replacement download.
+            marker = raw_dir / (config["raw_file"] + ".cache.json")
+            current = {"raw": artifact_record(raw_path), "filtered": artifact_record(filtered_path)}
+            if marker.is_file():
+                saved = json.loads(marker.read_text(encoding="utf-8"))
+                if saved.get("artifacts") != current:
+                    return False
+            else:
+                atomic_json(marker, {"source": "GEM Assets API", "retrieved_at_utc": manifest.get("retrieved_at_utc"),
+                                     "artifacts": current, "validation": "record counts and bbox membership cross-checked against local source payload"})
+        return True
+    except (OSError, ValueError, TypeError, KeyError):
+        return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--overwrite", action="store_true", help="replace this script's generated GEM files")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     raw_dir, processed_dir = repo / "data" / "raw" / "gem", repo / "data" / "processed" / "gem"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    if not args.overwrite and existing_gem_cache_is_valid(raw_dir, processed_dir):
+        saved = json.loads((raw_dir / "manifest.json").read_text(encoding="utf-8"))
+        for name, stats in saved["datasets"].items():
+            print(f"Using verified local GEM cache {name}: state={stats['state_record_count']} records, bbox={stats['filtered_record_count']} records")
+        print(f"Manifest: {raw_dir / 'manifest.json'}")
+        return 0
     retrieved_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     manifest: dict[str, Any] = {
         "source": "Global Energy Monitor (GEM) Assets API",
@@ -170,6 +225,14 @@ def main() -> int:
         write_json(processed_dir / config["filtered_file"], filtered_payload, args.overwrite)
 
     write_json(raw_dir / "manifest.json", manifest, args.overwrite)
+    for config in DATASETS.values():
+        raw_path = raw_dir / config["raw_file"]
+        filtered_path = processed_dir / config["filtered_file"]
+        atomic_json(raw_dir / (config["raw_file"] + ".cache.json"), {
+            "source": "GEM Assets API", "retrieved_at_utc": retrieved_at,
+            "artifacts": {"raw": artifact_record(raw_path), "filtered": artifact_record(filtered_path)},
+            "validation": "complete Jharkhand payload and bbox-filtered record set",
+        })
     for name, stats in manifest["datasets"].items():
         print(f"{name}: state={stats['state_record_count']} records/{stats['state_unique_location_count']} locations, coords={stats['state_records_with_numeric_latitude_and_longitude']}, missing_coords={stats['state_records_missing_or_nonnumeric_coordinates']}, bbox={stats['filtered_record_count']} records/{stats['pilot_unique_location_count']} locations, precision_fields={stats['location_precision_fields_present']}")
     print(f"Manifest: {raw_dir / 'manifest.json'}")

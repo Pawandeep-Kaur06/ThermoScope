@@ -34,6 +34,15 @@ __pycache__/
 !/outputs/**/
 !/outputs/**/.gitkeep
 
+# Locally trained model artifacts and experiment logs
+/models/*.pt
+/models/*.pth
+/models/*.onnx
+/models/*.safetensors
+/runs/**
+!/runs/**/
+!/runs/**/.gitkeep
+
 # Satellite and other large raster imagery (even if stored outside data/).
 *.tif
 *.tiff

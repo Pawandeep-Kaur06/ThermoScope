@@ -16,6 +16,70 @@
     @media(max-width:1050px){.dashboard{grid-template-columns:minmax(0,1fr) 330px}.scene-facts{width:210px}}
     @media(max-width:820px){.app{grid-template-columns:1fr}.rail{height:48px;flex-direction:row;justify-content:center;border-right:0;border-bottom:1px solid var(--line);padding:4px}.rail .rail-mark{margin:0 8px 0 0}.top{padding:9px 12px}.status-chip{margin-left:0}.content{padding:11px}.heading{align-items:start;flex-direction:column}.scope{text-align:left}.dashboard{grid-template-columns:1fr;min-height:0}.stage{min-height:500px}.side{max-height:none;overflow:visible}.scene-facts{width:200px;top:50px}.footer{padding:8px 12px;flex-direction:column}.stage-note{left:8px;bottom:8px}}
     @media(max-width:480px){.chip:nth-of-type(n+3){display:none}.stage{min-height:440px}.scene-facts{width:190px;top:53px;left:7px;max-height:calc(100% - 125px);padding:7px}.scene-wrap{inset:45px 4px 4px}.stage-note{font-size:9px;max-width:calc(100% - 16px)}.map-tooltip{max-width:calc(100% - 210px);font-size:9px}.stage-label{display:none}}
+    /* Keep the map unobstructed and give returned evidence room to breathe. */
+    .stage{display:flex;flex-direction:column}
+    .stage-head{position:relative;inset:auto;min-height:48px;padding:8px 14px;flex-shrink:0}
+    .scene-wrap{position:relative;inset:auto;min-height:420px;flex:1;padding:0 18px}
+    .scene-facts{position:relative;inset:auto;width:auto;max-height:none;overflow:visible;margin:0 12px 50px;backdrop-filter:none}
+    .side{max-height:none;overflow:visible}
+    .evidence-results{margin-top:12px}
+    #results:not(.result-hidden){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .result-head,.result-warning,.map-only-note{grid-column:1/-1}
+    .evidence-panel{min-width:0;padding:10px;background:#0b1627;border:1px solid #1d2b43;border-radius:8px;display:flex;flex-direction:column}
+    .evidence-panel .section-title{font-size:12px;margin:0 0 8px;color:#c3d2e7}
+    .evidence-panel .item{margin-top:7px}
+    .evidence-panel .sub{margin-bottom:7px}
+    .evidence-panel .item-top{font-size:11px}
+    .evidence-panel .item p,.evidence-panel .help,.evidence-panel .tag{font-size:10px}
+    .evidence-scroll{height:180px;flex:0 0 180px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #263653;border-radius:7px;padding:5px;background:#091426}
+    .evidence-empty{margin:0;padding:10px;color:var(--muted);font-size:10px;line-height:1.45}
+    .facility-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:7px 5px;border-bottom:1px solid #1d2b43;font-size:10px}
+    .facility-row:last-child{border-bottom:0}
+    .facility-name{min-width:0;color:var(--ink);overflow-wrap:anywhere}
+    .facility-meta{flex:none;color:var(--muted);font-size:9px;text-align:right}
+    .firms-record{margin:6px 0;padding:8px;border:1px solid #1d2b43;border-radius:7px;background:#091426}
+    .firms-record strong{display:block;color:var(--ink);font-size:10px}
+    .firms-record p{margin:3px 0 0;color:var(--muted);font-size:9px;line-height:1.4}
+    .optional{font-weight:450;color:var(--muted)}
+    .choice-field{margin-top:14px}
+    .choice-field>label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+    .segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #2c3c58;border-radius:8px;overflow:hidden}
+    .segmented button{min-width:0;border:0;border-right:1px solid #2c3c58;background:#0b1628;color:var(--muted);padding:9px 4px;font-size:11px}
+    .segmented button:last-child{border-right:0}
+    .segmented button:hover{background:#13243a;color:var(--ink)}
+    .segmented button[aria-pressed="true"]{background:#12364a;color:var(--cyan);font-weight:700}
+    .date-field{margin-top:13px}
+    .remove-image{display:block;margin:7px 0 0 auto;padding:2px 0;border:0;background:none;color:#8ca8d1;text-decoration:underline;font-size:11px}
+    .remove-image[hidden]{display:none}
+    #analyze[hidden]{display:none}
+    .dashboard{min-height:0;align-items:stretch}
+    .stage{min-height:0}
+    .scene-wrap{min-height:320px}
+    .side{height:100%;min-height:0;padding-right:0}
+    .side-shell{box-sizing:border-box;width:100%;height:100%;min-height:100%;display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(150deg,#101d32,#0c1729)}
+    .side-shell>.card{flex:0 0 auto}
+    .side-shell>.privacy{margin-top:auto}
+    .side-shell>.button{margin-top:0}
+    .stage-note{bottom:0;left:12px;right:12px;max-width:none;white-space:normal;overflow:visible;text-overflow:clip}
+    .imagery-card{display:flex;flex-direction:column;flex:1 1 260px;min-height:260px;overflow:hidden}
+    .imagery-card h2{margin-bottom:3px}
+    .imagery-description{margin:0 0 8px;color:var(--dim);font-size:10px;line-height:1.4}
+    .satellite-preview{position:relative;flex:1;min-height:190px;overflow:hidden;border:1px solid #263653;border-radius:8px;background:linear-gradient(145deg,#0b1628,#10203a)}
+    .imagery-tiles{position:absolute;inset:0;overflow:hidden}
+    .imagery-tile{position:absolute;width:256px;height:256px;max-width:none;object-fit:cover;user-select:none;-webkit-user-drag:none}
+    .imagery-placeholder{position:absolute;inset:0;display:grid;place-items:center;padding:20px;color:var(--muted);font-size:11px;text-align:center;background:#09142677;z-index:1}
+    .imagery-placeholder[hidden],.imagery-marker[hidden],.imagery-status[hidden]{display:none}
+    .imagery-marker{position:absolute;left:50%;top:50%;width:16px;height:16px;border:3px solid white;border-radius:50%;background:#f45b62;box-shadow:0 1px 8px #000b;transform:translate(-50%,-50%);pointer-events:none;z-index:2}
+    .imagery-marker:before,.imagery-marker:after{content:"";position:absolute;background:white;box-shadow:0 1px 3px #0009}
+    .imagery-marker:before{width:2px;height:28px;left:4px;top:-9px}.imagery-marker:after{height:2px;width:28px;top:4px;left:-9px}
+    .imagery-controls{position:absolute;top:8px;right:8px;display:grid;gap:4px;z-index:3}
+    .imagery-controls button{width:28px;height:28px;border:1px solid #52617b;border-radius:5px;background:#091426df;color:var(--ink);font-size:17px;line-height:1}
+    .imagery-status{position:absolute;left:8px;bottom:26px;max-width:calc(100% - 16px);padding:4px 6px;border-radius:4px;background:#091426dc;color:#e8eef8;font-size:9px;z-index:3;pointer-events:none}
+    .imagery-attribution{position:absolute;right:4px;bottom:3px;max-width:calc(100% - 8px);color:#edf3ff;background:#091426cc;padding:2px 5px;border-radius:3px;font-size:8px;line-height:1.2;z-index:3}
+    .imagery-attribution a{text-decoration:underline}
+    @media(max-width:820px){.side{height:auto}.side-shell{height:auto;min-height:0}}
+    @media(max-width:1050px){#results:not(.result-hidden){grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){#results:not(.result-hidden){grid-template-columns:1fr}.scene-wrap{min-height:360px;padding:0 6px}.scene-facts{margin:0 8px 52px}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
@@ -54,32 +118,57 @@
           <div class="stage-note"><b>Area selection:</b> Hover for coordinates; click to choose a center or drag a rectangle. Searches use a circle covering the selected box, not an exact polygon query.</div>
         </section>
         <aside class="side">
-          <section class="card" id="upload"><h2>Upload satellite image</h2><p class="sub">Preview an image and, when compatible, run the separate visible-smoke model.</p>
-            <div id="error" class="error" role="alert"></div>
-            <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose a satellite image or drop it here"><input type="file" id="file" accept=".tif,.tiff,.png,.jpg,.jpeg,image/png,image/jpeg,image/tiff"><strong>Choose a file or drop it here</strong><span>GeoTIFF, PNG, or JPEG · up to 25 MiB</span></div>
-            <div class="help"><label><input id="bandConfirmed" type="checkbox"> I confirm this is a 13-band Sentinel-2 L2A GeoTIFF in published band order.</label><br>The smoke model requires 13-band uint16 imagery (90–120 px per side). RGB, PNG/JPEG, four-band chips, or unknown band order are not passed to it. If band descriptions are absent, confirm the actual source order before analysis.</div>
+          <div class="side-shell">
+          <section class="card" id="search-area"><h2>Search area</h2><p class="sub">Choose a point on the map or enter coordinates.</p>
             <div class="fields">
               <div class="field"><label for="latitude">Latitude</label><input id="latitude" type="number" step="any" min="-90" max="90" placeholder="23.78"></div>
               <div class="field"><label for="longitude">Longitude</label><input id="longitude" type="number" step="any" min="-180" max="180" placeholder="86.39"></div>
-              <div class="field"><label for="date">Acquisition date</label><input id="date" type="date"></div>
-              <div class="field"><label>Evidence area</label><input value="Jharkhand" disabled></div>
             </div>
-            <button class="button map-search" id="searchMap" type="button" disabled>Search selected map area</button>
-            <p class="help">You can search from the map without uploading an image. This returns FIRMS/OSM/Sentinel context only; smoke inference requires an image upload.</p>
-            <details class="advanced"><summary>Evidence search settings</summary><div class="fields">
-              <div class="field"><label for="radius">Search radius</label><select id="radius"><option value="500">500 m</option><option value="1000" selected>1 km</option><option value="2500">2.5 km</option><option value="5000">5 km</option></select></div>
-              <div class="field"><label for="lookback">FIRMS lookback</label><select id="lookback"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></div>
-            </div></details>
-            <button class="button" id="analyze" disabled>Inspect image and local evidence</button><div class="spinner" id="spinner">Reading image and matching local evidence…</div>
-            <p class="privacy">Image bytes are held in memory for this request and are not saved or sent to a third-party service.</p>
+            <div class="choice-field"><label>Search radius</label><div class="segmented" id="radiusChoices" role="group" aria-label="Search radius">
+              <button type="button" data-choice-target="radius" data-choice-value="500" aria-pressed="false">500 m</button>
+              <button type="button" data-choice-target="radius" data-choice-value="1000" aria-pressed="true">1 km</button>
+              <button type="button" data-choice-target="radius" data-choice-value="2500" aria-pressed="false">2.5 km</button>
+              <button type="button" data-choice-target="radius" data-choice-value="5000" aria-pressed="false">5 km</button>
+            </div><select id="radius" hidden><option value="500">500 m</option><option value="1000" selected>1 km</option><option value="2500">2.5 km</option><option value="5000">5 km</option></select></div>
+            <div class="choice-field"><label>FIRMS lookback</label><div class="segmented" id="lookbackChoices" role="group" aria-label="FIRMS lookback">
+              <button type="button" data-choice-target="lookback" data-choice-value="7" aria-pressed="false">7 days</button>
+              <button type="button" data-choice-target="lookback" data-choice-value="30" aria-pressed="true">30 days</button>
+              <button type="button" data-choice-target="lookback" data-choice-value="90" aria-pressed="false">90 days</button>
+              <button type="button" data-choice-target="lookback" data-choice-value="365" aria-pressed="false">1 year</button>
+            </div><select id="lookback" hidden><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></div>
           </section>
-          <section class="card" id="evidence">
-            <div class="model-state" id="limits"><strong>Visible-smoke model · separate output</strong>Experimental model evaluated on held-out 2019 European sites; not validated for Jharkhand. It indicates visual smoke cues only and cannot identify fire, source cause, or thermal activity.</div>
-            <div class="empty" id="empty"><strong>Evidence panels appear here</strong><p>Upload an image and provide location/date metadata when it is not embedded.</p></div>
-            <div class="result-hidden" id="results"></div>
+          <section class="card" id="upload"><h2>Satellite image <span class="optional">optional</span></h2><p class="sub">Add a scene for separate visible-smoke analysis.</p>
+            <div id="error" class="error" role="alert"></div>
+            <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose a satellite image or drop it here"><input type="file" id="file" accept=".tif,.tiff,.png,.jpg,.jpeg,image/png,image/jpeg,image/tiff"><strong>Choose a file or drop it here</strong><span>GeoTIFF, PNG, or JPEG · up to 25 MiB</span></div>
+            <button type="button" class="remove-image" id="removeImage" hidden>Remove image</button>
+            <div class="help"><label><input id="bandConfirmed" type="checkbox"> I confirm this is a 13-band Sentinel-2 L2A GeoTIFF in published band order.</label><br>The smoke model requires 13-band uint16 imagery (90–120 px per side). RGB, PNG/JPEG, four-band chips, or unknown band order are not passed to it. If band descriptions are absent, confirm the actual source order before analysis.</div>
+            <div class="field date-field"><label for="date">Acquisition date</label><input id="date" type="date"></div>
+            <p class="help">Without a compatible 13-band GeoTIFF, the image is previewed but smoke inference does not run.</p>
           </section>
+          <button class="button" id="searchMap" type="button" disabled>Search map area</button>
+          <button class="button" id="analyze" type="button" disabled hidden>Inspect image and local evidence</button>
+          <div class="spinner" id="spinner">Reading image and matching local evidence…</div>
+          <section class="card imagery-card" aria-label="Satellite imagery at the selected coordinates">
+            <h2>Satellite view</h2>
+            <p class="imagery-description">Esri World Imagery preview · date and resolution vary by location. Context only; it cannot confirm an active fire.</p>
+            <div class="satellite-preview" id="satellitePreview" role="img" aria-label="Satellite imagery preview centered on selected coordinates">
+              <div class="imagery-tiles" id="imageryTiles"></div>
+              <div class="imagery-placeholder" id="imageryPlaceholder">Select a point in Jharkhand or enter coordinates to load satellite imagery.</div>
+              <div class="imagery-marker" id="imageryMarker" hidden></div>
+              <div class="imagery-controls" aria-label="Satellite preview zoom controls"><button type="button" id="imageryZoomIn" aria-label="Zoom in">+</button><button type="button" id="imageryZoomOut" aria-label="Zoom out">−</button></div>
+              <div class="imagery-status" id="imageryStatus" hidden></div>
+              <div class="imagery-attribution"><a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noopener noreferrer">Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community</a></div>
+            </div>
+          </section>
+          <p class="privacy">Satellite tiles send tile locations to Esri; uploaded images remain local.</p>
+          </div>
         </aside>
       </div>
+      <section class="card evidence-results" id="evidence">
+        <div class="model-state" id="limits"><strong>Visible-smoke model · separate output</strong>Experimental model evaluated on held-out 2019 European sites; not validated for Jharkhand. It indicates visual smoke cues only and cannot identify fire, source cause, or thermal activity.</div>
+        <div class="empty" id="empty"><strong>Evidence panels appear here</strong><p>Upload an image and provide location/date metadata when it is not embedded.</p></div>
+        <div class="result-hidden" id="results"></div>
+      </section>
     </div>
     <footer class="footer"><span>ThermoScope · Jharkhand research prototype</span><span>Proximity and recurrence are evidence indicators, not ground-truth labels.</span></footer>
   </main>
@@ -88,20 +177,37 @@
 const $=id=>document.getElementById(id),fileInput=$("file"),drop=$("drop");let selected=null;
 drop.addEventListener("click",()=>fileInput.click());drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click()}});drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});drop.addEventListener("dragleave",()=>drop.classList.remove("over"));drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");if(e.dataTransfer.files.length){fileInput.files=e.dataTransfer.files;handleFile()}});fileInput.addEventListener("change",handleFile);
 function err(text){$("error").textContent=text;$("error").style.display=text?"block":"none"}
-function handleFile(){selected=fileInput.files[0]||null;$("analyze").disabled=!selected;$("results").classList.add("result-hidden");$("empty").style.display="block";if(!selected){$("preview").style.display="none";$("stagePlaceholder").style.display="block";$("stageStatus").textContent="No scene loaded";return}if(selected.size>25*1024*1024){err("File exceeds the 25 MiB upload limit.");$("analyze").disabled=true;return}err("");$("filemeta").textContent=`${selected.name} · ${(selected.size/1048576).toFixed(2)} MiB`;$("stageStatus").textContent="Image selected · awaiting inspection";const reader=new FileReader();reader.onload=()=>{$("previewImg").src=reader.result;$("preview").style.display="flex";$("stagePlaceholder").style.display="none"};reader.readAsDataURL(selected)}
+function updatePrimaryAction(){const hasImage=Boolean(selected);$("searchMap").textContent=hasImage?"Analyze image and search area":"Search map area";$("analyze").disabled=!hasImage;if(window.updateMapSearchState)window.updateMapSearchState()}
+function handleFile(){selected=fileInput.files[0]||null;$("removeImage").hidden=!selected;updatePrimaryAction();$("results").classList.add("result-hidden");$("empty").style.display="block";if(!selected){$("preview").style.display="none";$("stagePlaceholder").style.display="block";$("stageStatus").textContent="No scene loaded";return}if(selected.size>25*1024*1024){err("File exceeds the 25 MiB upload limit.");$("analyze").disabled=true;$("searchMap").disabled=true;return}err("");$("filemeta").textContent=`${selected.name} · ${(selected.size/1048576).toFixed(2)} MiB`;$("stageStatus").textContent="Image selected · awaiting inspection";const reader=new FileReader();reader.onload=()=>{$("previewImg").src=reader.result;$("preview").style.display="flex";$("stagePlaceholder").style.display="none"};reader.readAsDataURL(selected)}
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
 function addItem(parent,title,badge,description){const n=el("div","item"),top=el("div","item-top"),left=el("span","",title);top.append(left);if(badge)top.append(el("span","tag",badge));n.append(top);if(description)n.append(el("p","",description));parent.append(n)}
+function readableDate(value){if(!value)return"Date not available";const parts=String(value).slice(0,10).split("-");if(parts.length!==3)return String(value);const d=new Date(Date.UTC(Number(parts[0]),Number(parts[1])-1,Number(parts[2])));return Number.isNaN(d.valueOf())?String(value):d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"})}
+function readableDistance(value){const n=Number(value);if(!Number.isFinite(n))return"Distance unavailable";return n>=1000?`${(n/1000).toFixed(1)} km away`:`${Math.round(n)} m away`}
+function readableConfidence(value){const text=String(value??"").trim().toLowerCase();return({l:"Low",low:"Low",n:"Standard",nominal:"Standard",h:"High",high:"High"})[text]|| (text?`Reported value: ${value}`:"Not reported")}
+function readableSensor(row){const satellite=String(row.satellite||"").toUpperCase(),instrument=String(row.instrument||"").toUpperCase();const names={SNPP:"Suomi NPP",NOAA20:"NOAA-20",NOAA21:"NOAA-21",TERRA:"Terra",AQUA:"Aqua"};const platform=names[satellite]||row.satellite||"NASA FIRMS satellite";return instrument&&instrument!==satellite?`${platform} satellite (${instrument} sensor)`: `${platform} satellite`}
+function readableDaynight(value){return({D:"daytime",N:"nighttime",DAY:"daytime",NIGHT:"nighttime"})[String(value??"").toUpperCase()]||"time of day not reported"}
+function readableFirmsWindow(f,image){const radius=Number(f.search_radius_m),count=Number(f.count_in_search_radius)||0,where=Number.isFinite(radius)?`within ${radius.toLocaleString()} m`:"near the selected point";if(image?.acquisition_date&&f.lookback_days){const end=new Date(`${image.acquisition_date}T00:00:00Z`),start=new Date(end);start.setUTCDate(start.getUTCDate()-Number(f.lookback_days));return `${count} satellite thermal detections ${where}, from ${readableDate(start.toISOString().slice(0,10))} through ${readableDate(image.acquisition_date)}. The order of detections on the same day is unknown.`}return `${count} satellite thermal detections ${where}. Dates were not filtered because no image date was supplied.`}
+function appendFirmsRecord(parent,row){const card=el("div","firms-record"),frp=row.thermal_frp_mw??row.frp,frpNumber=Number(frp);card.append(el("strong","",`Thermal signal observed ${readableDate(row.acq_date)}`));const distance=readableDistance(row.distance_m);card.append(el("p","",`${distance} from the selected point · ${Number.isFinite(frpNumber)?`estimated heat output: ${frpNumber.toFixed(2)} MW`:`heat output not reported`}.`));card.append(el("p","",`${readableSensor(row)} · ${readableDaynight(row.daynight)} · satellite detection confidence: ${readableConfidence(row.confidence)}.`));parent.append(card)}
+function readableFeatureName(feature){const label=String(feature.label||"").trim(),known={industrial_landuse:"Industrial area",power_infrastructure:"Power-grid feature",mining_extraction:"Mining/extraction area",industrial_facility:"Industrial facility",power_generation:"Power-generation facility",power_site:"Power site",power_transmission_tower:"Transmission tower",power_transmission_line:"Transmission line",waste_facility:"Waste facility",mine_working_feature:"Mine feature"};if(known[label])return known[label];return label.replaceAll("_"," ")||"Unnamed mapped feature"}
+function readableFeatureGroup(feature){return feature.context_group==="general_power_infrastructure"?"Power grid":"Industrial/generation"}
+function appendFacilityRow(parent,feature){const row=el("div","facility-row"),name=el("span","facility-name",readableFeatureName(feature)),meta=el("span","facility-meta",`${readableDistance(feature.distance_m)} · ${readableFeatureGroup(feature)}`);row.append(name,meta);parent.append(row)}
+function updateSegmentedChoice(target,value){document.querySelectorAll(`[data-choice-target="${target}"]`).forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.choiceValue===String(value))))}
+document.addEventListener("click",event=>{const button=event.target.closest("[data-choice-target]");if(!button)return;const select=$(button.dataset.choiceTarget);if(!select)return;select.value=button.dataset.choiceValue;select.dispatchEvent(new Event("change",{bubbles:true}));updateSegmentedChoice(button.dataset.choiceTarget,button.dataset.choiceValue)});
+window.updateSegmentedChoice=updateSegmentedChoice;
+$("latitude").addEventListener("input",()=>window.updateMapSearchState?.());$("longitude").addEventListener("input",()=>window.updateMapSearchState?.());
+$("removeImage").addEventListener("click",()=>{fileInput.value="";$("bandConfirmed").checked=false;$("date").value="";handleFile()});
+function evidencePanel(root,title){const panel=el("section","evidence-panel");panel.append(el("div","section-title",title));root.append(panel);return panel}
 function render(data){$("empty").style.display="none";const root=$("results");root.replaceChildren();root.classList.remove("result-hidden");const a=data.analysis,image=data.image;
  const dateText=image.acquisition_date||"Not supplied",coords=image.latitude!==null&&image.longitude!==null?`${Number(image.latitude).toFixed(5)}, ${Number(image.longitude).toFixed(5)}`:"Not available";
  $("statPixels").textContent=image.width?`${image.width} × ${image.height} · ${image.bands||"?"} bands`:"—";$("statDate").textContent=dateText;$("statCoords").textContent=coords;$("statCrs").textContent=image.crs||"Not available";$("statArea").textContent=a?(a.within_study_area?"Inside Jharkhand":"Outside Jharkhand"):(coords==="Not available"?"Location needed":"Not checked");$("statModel").textContent=data.smoke?.status||"Unavailable";$("stageStatus").textContent=a?(a.within_study_area?"Location evidence checked":"Outside evidence area"):"Image inspected";
  const head=el("div","result-head");head.append(el("span","pill",a?"Overall evidence-based assessment":"Image review"));head.append(el("h2","",a?(a.within_study_area?"Location evidence summary":"Outside the study area"):"Image received"));head.append(el("p","",a?a.assessment_text:"Enter coordinates to compare this location with Jharkhand evidence."));root.append(head);
- const smoke=data.smoke||a?.smoke;root.append(el("div","section-title","Visible-smoke image model · separate from fire evidence"));
- if(smoke?.status==="available"){addItem(root,smoke.prediction==="visible_smoke_cue"?"Visible smoke cue":"No visible-smoke cue",`score ${Number(smoke.smoke_score_uncalibrated).toFixed(3)}`,`${smoke.model} · validation-selected threshold ${Number(smoke.threshold).toFixed(3)}. Score is uncalibrated; this is not fire or cause confirmation.`);if(smoke.segmentation?.status==="available"){root.append(el("p","help",`Experimental smoke-mask overlay · ${Number(smoke.segmentation.predicted_smoke_pixel_fraction*100).toFixed(1)}% of the 90×90 model crop selected.`));const overlay=el("img","smallimg");overlay.src=smoke.segmentation.overlay_data_url;overlay.alt="Predicted visible-smoke segmentation overlay";root.append(overlay)}else if(smoke.segmentation?.message)addItem(root,"Smoke segmentation overlay unavailable",null,smoke.segmentation.message)}else addItem(root,smoke?.status||"unavailable",null,smoke?.message||"Smoke model weights are not installed or the uploaded image does not meet its band requirements.");
- if(!a){root.append(el("div","warn","No usable coordinates were found in the image. Enter latitude and longitude to search local evidence."));return}if(a.data_warnings)a.data_warnings.forEach(w=>root.append(el("div","warn",w)));if(!a.within_study_area){a.limitations.forEach(x=>root.append(el("div","warn",x)));return}
- root.append(el("div","section-title","NASA FIRMS thermal-anomaly evidence"));const f=a.firms;if(f.records?.length){root.append(el("p","sub",`${f.count_in_search_radius} records in search radius · ${f.temporal_rule}`));const list=el("div","");f.records.slice(0,8).forEach(r=>addItem(list,`${r.acq_date||"Date unknown"} · ${Number(r.distance_m).toFixed(0)} m`,`${r.satellite||"FIRMS"} · FRP ${r.thermal_frp_mw??r.frp??"—"} MW`,`${r.confidence||"Confidence unknown"} confidence · ${r.daynight||"day/night unknown"}`));root.append(list);addItem(root,"Earlier nearby observations",`${f.prior_count_within_250m??"Unknown"} records`,`${f.prior_distinct_dates_within_250m??"Unknown"} earlier dates; recurrence does not prove one physical source.`)}else addItem(root,"No qualifying local FIRMS records",null,"No record matched this spatial/date window. This does not show that no thermal event occurred.");
- root.append(el("div","section-title","OpenStreetMap industrial-context evidence"));const o=a.osm;if(o.features?.length){const list=el("div","");o.features.slice(0,8).forEach(x=>addItem(list,x.label,`${Number(x.distance_m).toFixed(0)} m`,`${x.context_group.replaceAll("_"," ")} · ${(x.roles||[]).join(", ")} · ${(x.categories||[]).join(", ")}`));root.append(list);root.append(el("p","help",o.source_vintage+" OSM proximity is context only; mapped features may be incomplete or out of date."))}else addItem(root,"No relevant mapped OSM feature in radius",null,"Unmapped or absent features cannot be interpreted as evidence of absence.");
- root.append(el("div","section-title","Existing Sentinel-2 context"));const s=a.sentinel2_context;if(s.record){addItem(root,`${s.record.scene_item_id||"Sentinel-2 scene"} · ${s.record.acquisition_datetime_utc}`,`${Number(s.record.distance_m).toFixed(0)} m from upload`,`Scene cloud ${s.record.scene_cloud_percent??"unknown"}% · chip cloud/shadow ${s.record.chip_cloud_shadow_percent??"unknown"}%`);const img=el("img","smallimg");img.src=s.record.preview_data_url;img.alt="Nearby existing Sentinel-2 context chip";root.append(img);root.append(el("p","help",s.record.warning))}else addItem(root,"No nearby eligible stored chip",null,s.message||"The app does not download imagery automatically.");
- root.append(el("div","section-title","Interpretation limits"));a.limitations.forEach(x=>root.append(el("div","warn",x)))
+ const smoke=data.smoke||a?.smoke,modelPanel=evidencePanel(root,"Visible-smoke image model · separate from fire evidence");
+ if(smoke?.status==="available"){addItem(modelPanel,smoke.prediction==="visible_smoke_cue"?"Visible smoke cue":"No visible-smoke cue",`score ${Number(smoke.smoke_score_uncalibrated).toFixed(3)}`,`${smoke.model} · validation-selected threshold ${Number(smoke.threshold).toFixed(3)}. Score is uncalibrated; this is not fire or cause confirmation.`);if(smoke.segmentation?.status==="available"){modelPanel.append(el("p","help",`Experimental smoke-mask overlay · ${Number(smoke.segmentation.predicted_smoke_pixel_fraction*100).toFixed(1)}% of the 90×90 model crop selected.`));const overlay=el("img","smallimg");overlay.src=smoke.segmentation.overlay_data_url;overlay.alt="Predicted visible-smoke segmentation overlay";modelPanel.append(overlay)}else if(smoke.segmentation?.message)addItem(modelPanel,"Smoke segmentation overlay unavailable",null,smoke.segmentation.message)}else addItem(modelPanel,smoke?.status||"unavailable",null,smoke?.message||"Smoke model weights are not installed or the uploaded image does not meet its band requirements.");
+ if(!a){const warning=el("div","warn result-warning","No usable coordinates were found in the image. Enter latitude and longitude to search local evidence.");root.append(warning);return}if(a.data_warnings)a.data_warnings.forEach(w=>root.append(el("div","warn result-warning",w)));if(!a.within_study_area){a.limitations.forEach(x=>root.append(el("div","warn result-warning",x)));return}
+ const firmsPanel=evidencePanel(root,"NASA FIRMS thermal-anomaly evidence"),f=a.firms,firmRecords=f.records||[];firmsPanel.append(el("p","sub",readableFirmsWindow(f,image)));const firmsList=el("div","evidence-scroll");firmsList.setAttribute("role","list");firmsList.setAttribute("aria-label","Nearby NASA FIRMS thermal detections");if(firmRecords.length){firmRecords.forEach(r=>appendFirmsRecord(firmsList,r))}else{firmsList.append(el("p","evidence-empty","No FIRMS record matched this distance and date window. This does not mean that no event occurred."))}firmsPanel.append(firmsList);if(f.count_in_search_radius>firmRecords.length)firmsPanel.append(el("p","help",`Showing the ${firmRecords.length} closest of ${f.count_in_search_radius} matching detections.`));if(f.prior_count_within_250m!==null&&f.prior_count_within_250m!==undefined)addItem(firmsPanel,"Earlier nearby observations",`${f.prior_count_within_250m} detections`,`${f.prior_distinct_dates_within_250m??"Unknown"} earlier dates; repeat detections do not prove one physical source.`);
+ const osmPanel=evidencePanel(root,"OpenStreetMap mapped industrial context"),o=a.osm;const features=o.features||[],industrialCount=o.industrial_feature_count??features.filter(x=>x.context_group==="industrial_or_generation_context").length,generalPowerCount=o.general_power_feature_count??features.filter(x=>x.context_group==="general_power_infrastructure").length;osmPanel.append(el("p","sub",`${industrialCount} mapped industrial or power-generation features · ${generalPowerCount} general power-grid features within ${Number(o.search_radius_m||a.search_radius_m||1000).toLocaleString()} m.`));const osmList=el("div","evidence-scroll");osmList.setAttribute("role","list");osmList.setAttribute("aria-label","Nearby mapped features");if(features.length){features.forEach(x=>appendFacilityRow(osmList,x))}else{osmList.append(el("p","evidence-empty","No relevant mapped feature is present in this local extract and search radius. Unmapped features may still exist."))}osmPanel.append(osmList);if(Number(o.feature_count)>features.length)osmPanel.append(el("p","help",`Showing the ${features.length} closest of ${o.feature_count} mapped features.`));osmPanel.append(el("p","help",`${o.source_vintage} Counts refer to mapped features, not necessarily unique companies or sites. Mapped context may be incomplete or out of date; proximity does not establish cause.`));
+ const satellitePanel=evidencePanel(root,"Existing Sentinel-2 context"),s=a.sentinel2_context;if(s.record){addItem(satellitePanel,`${s.record.scene_item_id||"Sentinel-2 scene"} · ${s.record.acquisition_datetime_utc}`,`${Number(s.record.distance_m).toFixed(0)} m from upload`,`Scene cloud ${s.record.scene_cloud_percent??"unknown"}% · chip cloud/shadow ${s.record.chip_cloud_shadow_percent??"unknown"}%`);const img=el("img","smallimg");img.src=s.record.preview_data_url;img.alt="Nearby existing Sentinel-2 context chip";satellitePanel.append(img);satellitePanel.append(el("p","help",s.record.warning))}else addItem(satellitePanel,"No nearby eligible stored chip",null,s.message||"The app does not download imagery automatically.");
+ const limitsPanel=evidencePanel(root,"Interpretation limits");a.limitations.forEach(x=>limitsPanel.append(el("div","warn",x)))
 }
 $("analyze").addEventListener("click",async()=>{if(!selected)return;err("");$("analyze").disabled=true;$("spinner").style.display="block";try{const fd=new FormData();fd.append("image",selected);for(const[key,id]of[["latitude","latitude"],["longitude","longitude"],["acquisition_date","date"],["radius_m","radius"],["lookback_days","lookback"]])fd.append(key,$(id).value);fd.append("band_order_confirmed",$("bandConfirmed").checked?"true":"false");const res=await fetch("/api/analyze",{method:"POST",body:fd}),data=await res.json();if(!res.ok)throw new Error(data.error||"Image analysis failed.");if(data.image.latitude!==null&&$("latitude").value==="")$("latitude").value=data.image.latitude;if(data.image.longitude!==null&&$("longitude").value==="")$("longitude").value=data.image.longitude;if(data.image.acquisition_date&&$("date").value==="")$("date").value=data.image.acquisition_date;render(data)}catch(e){err(e.message||"Analysis failed.")}finally{$("analyze").disabled=false;$("spinner").style.display="none"}});
 </script>

@@ -1,15 +1,77 @@
-/* Local interactive map: the configured OSM boundary and evidence returned by the local app only. */
+/* Local study boundary and evidence map with an optional Esri imagery tile preview. */
 (() => {
   const byId = id => document.getElementById(id);
   const svg = byId("regionMap"), ns = "http://www.w3.org/2000/svg";
   const dimensions = { width: 840, height: 620, pad: 42 };
   let boundaryData = null, center = null, view = "map", dragStart = null, ignoreClick = false, areaRect = null;
+  let imageryZoom = 16, imageryTimer = null, imageryRequestId = 0;
 
   const svgNode = (name, attrs = {}) => {
     const node = document.createElementNS(ns, name);
     for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
     return node;
   };
+
+  function satellitePixelCoordinates(lon, lat, zoom) {
+    const scale = 256 * (2 ** zoom), sinLat = Math.sin(Math.max(-85.05112878, Math.min(85.05112878, lat)) * Math.PI / 180);
+    return { x: (lon + 180) / 360 * scale,
+      y: (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale };
+  }
+
+  function renderSatellitePreview() {
+    const panel = byId("satellitePreview"), tiles = byId("imageryTiles"), placeholder = byId("imageryPlaceholder");
+    if (!panel || !tiles || !boundaryData) return;
+    const lat = Number(byId("latitude").value), lon = Number(byId("longitude").value);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !contains(lon, lat)) {
+      imageryRequestId += 1; tiles.replaceChildren(); byId("imageryMarker").hidden = true;
+      placeholder.hidden = false; placeholder.textContent = "Select a point in Jharkhand or enter coordinates to load satellite imagery.";
+      byId("imageryStatus").hidden = true; return;
+    }
+    const width = panel.clientWidth, height = panel.clientHeight;
+    if (!width || !height) return;
+    const requestId = ++imageryRequestId, centerPixel = satellitePixelCoordinates(lon, lat, imageryZoom);
+    const leftPixel = centerPixel.x - width / 2, topPixel = centerPixel.y - height / 2;
+    const firstX = Math.floor(leftPixel / 256), firstY = Math.floor(topPixel / 256);
+    const lastX = Math.floor((leftPixel + width) / 256), lastY = Math.floor((topPixel + height) / 256);
+    const tileCount = 2 ** imageryZoom;
+    let loaded = 0, failed = 0;
+    tiles.replaceChildren(); placeholder.hidden = false; placeholder.textContent = "Loading satellite view…";
+    byId("imageryMarker").hidden = false;
+    const status = byId("imageryStatus"); status.hidden = false;
+    status.textContent = `${lat.toFixed(5)}°, ${lon.toFixed(5)}° · zoom ${imageryZoom}`;
+    for (let y = firstY; y <= lastY; y += 1) {
+      if (y < 0 || y >= tileCount) continue;
+      for (let x = firstX; x <= lastX; x += 1) {
+        const wrappedX = ((x % tileCount) + tileCount) % tileCount, image = new Image();
+        image.className = "imagery-tile"; image.alt = ""; image.draggable = false;
+        image.style.left = `${x * 256 - leftPixel}px`; image.style.top = `${y * 256 - topPixel}px`;
+        image.onload = () => {
+          if (requestId !== imageryRequestId) return;
+          loaded += 1;
+          if (loaded > 0) placeholder.hidden = true;
+        };
+        image.onerror = () => {
+          if (requestId !== imageryRequestId) return;
+          failed += 1;
+          if (loaded === 0 && failed === (lastX - firstX + 1) * (lastY - firstY + 1)) {
+            placeholder.hidden = false; placeholder.textContent = "Satellite tiles could not be loaded. Check your internet connection.";
+          }
+        };
+        image.src = `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${imageryZoom}/${y}/${wrappedX}`;
+        tiles.append(image);
+      }
+    }
+  }
+
+  window.refreshSatellitePreview = function () {
+    clearTimeout(imageryTimer);
+    imageryTimer = setTimeout(renderSatellitePreview, 250);
+  };
+
+  function zoomSatellitePreview(delta) {
+    imageryZoom = Math.max(14, Math.min(19, imageryZoom + delta));
+    renderSatellitePreview();
+  }
 
   function project(lon, lat) {
     const b = boundaryData.bbox_wgs84;
@@ -68,10 +130,11 @@
       byId("selectionPoint").setAttribute("visibility", "hidden");
       byId("selectionRing").setAttribute("visibility", "hidden");
       byId("dragSelection").setAttribute("visibility", "hidden");
-      byId("searchMap").disabled = true;
+      window.updateMapSearchState?.();
       return;
     }
     const point = project(center.lon, center.lat), radius = Number(byId("radius").value), b = boundaryData.bbox_wgs84;
+    window.updateSegmentedChoice?.("radius", radius);
     const rx = radius / (111320 * Math.cos(center.lat * Math.PI / 180)) *
       (dimensions.width - 2 * dimensions.pad) / (b.east - b.west);
     const ry = radius / 111320 * (dimensions.height - 2 * dimensions.pad) / (b.north - b.south);
@@ -84,7 +147,27 @@
       box.setAttribute("x", a.x); box.setAttribute("y", a.y); box.setAttribute("width", b.x - a.x); box.setAttribute("height", b.y - a.y);
       box.setAttribute("visibility", "visible");
     } else byId("dragSelection").setAttribute("visibility", "hidden");
-    byId("searchMap").disabled = false;
+    window.updateMapSearchState?.();
+  }
+
+  window.updateMapSearchState = function () {
+    const hasImage = Boolean(byId("file").files.length) && byId("file").files[0].size <= 25 * 1024 * 1024;
+    const lat = Number(byId("latitude").value), lon = Number(byId("longitude").value);
+    const validPoint = Number.isFinite(lat) && Number.isFinite(lon) && contains(lon, lat);
+    byId("searchMap").disabled = !(hasImage || validPoint);
+  };
+
+  function syncManualCenter() {
+    const lat = Number(byId("latitude").value), lon = Number(byId("longitude").value);
+    if (Number.isFinite(lat) && Number.isFinite(lon) && contains(lon, lat)) {
+      center = { lon, lat };
+      byId("statCoords").textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      byId("statArea").textContent = "Selected in Jharkhand";
+      byId("stageStatus").textContent = "Search area selected";
+    } else center = null;
+    areaRect = null;
+    updateSelection();
+    window.refreshSatellitePreview?.();
   }
 
   function chooseCenter(lon, lat) {
@@ -97,6 +180,7 @@
       if (radiusSelect.value === previousBoxRadius.value) radiusSelect.value = "1000";
       previousBoxRadius.remove();
     }
+    byId("radiusChoices").querySelector("button[data-map-radius]")?.remove();
     center = { lon, lat };
     areaRect = null;
     byId("longitude").value = lon.toFixed(5); byId("latitude").value = lat.toFixed(5);
@@ -105,6 +189,7 @@
     byId("stageStatus").textContent = "Search area selected";
     byId("mapTooltip").textContent = `Selected center ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E · radius ${byId("radius").value} m`;
     updateSelection();
+    window.refreshSatellitePreview?.();
   }
 
   function pointerCoordinates(event) {
@@ -154,7 +239,13 @@
   }
 
   async function searchArea() {
-    if (!center) return;
+    if (byId("file").files.length) { byId("analyze").click(); return; }
+    const lat = Number(byId("latitude").value), lon = Number(byId("longitude").value);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !contains(lon, lat)) {
+      byId("error").textContent = "Choose a point inside Jharkhand or enter valid coordinates.";
+      byId("error").style.display = "block"; return;
+    }
+    center = { lon, lat };
     byId("error").style.display = "none"; byId("searchMap").disabled = true; byId("spinner").style.display = "block";
     try {
       const response = await fetch("/api/area-evidence", {
@@ -222,6 +313,10 @@
     const option = document.createElement("option"); option.value = String(coveringRadius);
     option.textContent = `${(coveringRadius / 1000).toFixed(1)} km · covers selected box`; option.dataset.mapRadius = "true";
     select.add(option); select.value = option.value;
+    const choice = document.createElement("button"); choice.type = "button";
+    choice.dataset.choiceTarget = "radius"; choice.dataset.choiceValue = String(coveringRadius); choice.dataset.mapRadius = "true";
+    choice.textContent = `${(coveringRadius / 1000).toFixed(1)} km`; choice.setAttribute("aria-pressed", "true");
+    byId("radiusChoices").append(choice); window.updateSegmentedChoice?.("radius", coveringRadius);
     areaRect = box; updateSelection();
     byId("mapTooltip").textContent = `Selected rectangle · evidence search uses a ${coveringRadius.toLocaleString()} m circle around its center.`;
   });
@@ -233,7 +328,17 @@
   byId("mapViewBtn").addEventListener("click", () => setView("map"));
   byId("imageViewBtn").addEventListener("click", () => setView("image"));
   byId("searchMap").addEventListener("click", searchArea);
-  byId("radius").addEventListener("change", updateSelection);
+  byId("radius").addEventListener("change", () => { window.updateSegmentedChoice?.("radius", byId("radius").value); updateSelection(); });
+  byId("lookback").addEventListener("change", () => window.updateSegmentedChoice?.("lookback", byId("lookback").value));
+  byId("latitude").addEventListener("input", syncManualCenter);
+  byId("longitude").addEventListener("input", syncManualCenter);
+  byId("file").addEventListener("change", () => window.updateMapSearchState?.());
+  byId("imageryZoomIn").addEventListener("click", () => zoomSatellitePreview(1));
+  byId("imageryZoomOut").addEventListener("click", () => zoomSatellitePreview(-1));
+  if ("ResizeObserver" in window) {
+    const imageryResizeObserver = new ResizeObserver(() => window.refreshSatellitePreview?.());
+    imageryResizeObserver.observe(byId("satellitePreview"));
+  }
 
   // Keep the existing upload result renderer; add real evidence markers to its map view.
   const previousRender = window.render;
@@ -247,14 +352,18 @@
         smoke: { status: "map_only", message: "No image was uploaded; smoke inference was not run." },
       } : data;
       previousRender(renderData);
+      if (renderData.image.latitude !== null && renderData.image.longitude !== null) {
+        byId("latitude").value = renderData.image.latitude;
+        byId("longitude").value = renderData.image.longitude;
+        syncManualCenter();
+      }
       if (data.map_selection) {
-        const root = byId("results"), preview = root.querySelector(":scope > img.smallimg");
-        if (preview) preview.remove();
+        const root = byId("results");
         const modelHeading = [...root.querySelectorAll(".section-title")].find(node => node.textContent.includes("Visible-smoke"));
-        if (modelHeading) { const modelResult = modelHeading.nextElementSibling; modelHeading.remove(); modelResult?.remove(); }
-        const note = document.createElement("p"); note.className = "help";
+        modelHeading?.closest(".evidence-panel")?.remove();
+        const note = document.createElement("p"); note.className = "help map-only-note";
         note.textContent = "Map-only search: no image was uploaded, so no computer-vision inference was run.";
-        root.insertBefore(note, root.querySelector(".section-title"));
+        root.insertBefore(note, root.querySelector(".evidence-panel"));
         byId("statModel").textContent = "Not run · map search";
       }
       drawEvidence(data.analysis);

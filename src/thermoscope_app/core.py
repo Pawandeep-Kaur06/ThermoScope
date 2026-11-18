@@ -398,8 +398,13 @@ class EvidenceRepository:
                                 "longitude": float(feature_lon), "latitude": float(feature_lat),
                                 "selected_tags": {k: tags[k] for k in ("name", "landuse", "industrial", "power", "plant", "building", "man_made", "railway") if k in tags}})
         records.sort(key=lambda r: (r["distance_m"], r["label"]))
+        industrial_count = sum(r["context_group"] == "industrial_or_generation_context" for r in records)
+        general_power_count = sum(r["context_group"] == "general_power_infrastructure" for r in records)
         return {"status": "available", "search_radius_m": radius_m,
-                "feature_count": len(records), "features": records[:30],
+                "feature_count": len(records),
+                "industrial_feature_count": industrial_count,
+                "general_power_feature_count": general_power_count,
+                "features": records[:30],
                 "source_vintage": "Local Geofabrik Eastern Zone OSM extract processed 2026-10-16; current mapped context, not date-versioned."}
 
     def _sentinel_context(self, lon: float, lat: float, acq_date: str | None) -> dict[str, Any]:

@@ -4,7 +4,7 @@
 
 ThermoScope now has a local browser interface for uploading GeoTIFF, PNG, or JPEG satellite imagery. It previews the image, checks dimensions and file size, reads GeoTIFF CRS/affine bounds and acquisition-date tags where available, and reads JPEG EXIF GPS/date when present. The user can enter WGS84 longitude/latitude and acquisition date when metadata is absent.
 
-The interface also renders the configured Jharkhand boundary from local GeoJSON. Hovering shows map coordinates; clicking chooses a search center, and dragging selects a rectangle. Because the evidence engine searches by distance from a point, a rectangle is evaluated using the covering circle around its center, with the resulting radius shown in the UI. This is an approximate area search, not a polygon overlay/intersection query. FIRMS and OSM markers on the map are actual returned local records. No basemap tiles or fabricated facility/detection points are used.
+The interface also renders the configured Jharkhand boundary from local GeoJSON. Hovering shows map coordinates; clicking chooses a search center, and dragging selects a rectangle. Because the evidence engine searches by distance from a point, a rectangle is evaluated using the covering circle around its center, with the resulting radius shown in the UI. This is an approximate area search, not a polygon overlay/intersection query. FIRMS and OSM markers on the map are actual returned local records. The side panel also loads Esri World Imagery map tiles centered on the selected coordinates. The mosaic can combine sources with different acquisition dates and spatial resolutions; it is visual context only and cannot establish an active fire. Attribution is shown on the map as “Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community.” The browser requests tile URLs from Esri, which reveals tile locations to the provider; uploaded image bytes remain local.
 
 For a location inside the configured Jharkhand boundary, the app searches the existing local Jharkhand FIRMS feature table, the local OSM GeoPackage, the state pilot recurrence features, and the six-chip Sentinel-2 investigation output. The Sentinel-2 sample is shown only when the uploaded date is present, the scene was acquired on or before that date, and the chip is within 10 km. This is a small contextual archive, not general satellite retrieval.
 
@@ -18,7 +18,7 @@ From the repository root, with the existing satellite/geospatial dependencies in
 venv\Scripts\python.exe -m src.thermoscope_app.server
 ```
 
-Open `http://127.0.0.1:8765`. Stop the server with Ctrl+C. The server only binds to loopback and refuses a non-local bind address. Existing datasets are read-only inputs. Uploaded image bytes remain in memory for the request and are not saved. No external API is called.
+Open `http://127.0.0.1:8765`. Stop the server with Ctrl+C. The server only binds to loopback and refuses a non-local bind address. Existing datasets are read-only inputs. Uploaded image bytes remain in memory for the request and are not saved. The satellite preview makes direct HTTPS image-tile requests to Esri's World Imagery service; other evidence searches use local project data and do not call an external evidence API.
 
 The default inputs are the local Jharkhand prepared FIRMS, OSM, feature/recurrence, and satellite metadata outputs. To point at an alternate compatible local run:
 

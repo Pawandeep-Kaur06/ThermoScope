@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from email import policy
 from email.parser import BytesParser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -168,8 +169,9 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--host", default="127.0.0.1", help="Bind address; defaults to local-only access")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--host", default=os.environ.get("THERMOSCOPE_HOST", "127.0.0.1"),
+                        help="Bind address; defaults to local-only access")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8765")))
     parser.add_argument("--firms", type=Path, default=EvidenceRepository.local_default().firms_path)
     parser.add_argument("--osm", type=Path, default=EvidenceRepository.local_default().osm_path)
     parser.add_argument("--features", type=Path, default=EvidenceRepository.local_default().features_path)
@@ -178,13 +180,16 @@ def main() -> None:
     parser.add_argument("--smoke-segmentation-model", type=Path,
                         default=ROOT / "models" / "thermoscope_smoke_unet_v1.pth")
     args = parser.parse_args()
-    if args.host not in {"127.0.0.1", "localhost", "::1"}:
+    local_hosts = {"127.0.0.1", "localhost", "::1"}
+    public_bind_enabled = os.environ.get("THERMOSCOPE_ALLOW_PUBLIC_BIND") == "1"
+    if args.host not in local_hosts and not (args.host == "0.0.0.0" and public_bind_enabled):
         parser.error("For privacy, this app only supports loopback host addresses.")
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.repository = EvidenceRepository(args.firms, args.osm, args.features, args.satellite_metadata)
     server.smoke_model_path = args.smoke_model.resolve()
     server.smoke_segmentation_model_path = args.smoke_segmentation_model.resolve()
-    print(f"ThermoScope is available at http://{args.host}:{args.port} (local-only; Ctrl+C to stop)")
+    access = "container network" if args.host == "0.0.0.0" else "local-only"
+    print(f"ThermoScope is available on {args.host}:{args.port} ({access}; Ctrl+C to stop)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

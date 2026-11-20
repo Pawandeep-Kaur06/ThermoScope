@@ -1,0 +1,3 @@
+deployment/assets/*.csv text eol=lf
+deployment/assets/*.geojson text eol=lf
+deployment/assets/manifest.sha256 text eol=lf
